@@ -1,7 +1,6 @@
 pragma solidity ^0.4.0;
 contract RockPaperScissors {
     
-    mapping (address => uint) payouts;
     mapping (string => mapping(string => uint)) winnerMatrix;
     bool gameOver;
     address p1;
