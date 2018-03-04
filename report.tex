@@ -63,14 +63,28 @@ As it stands, the game must assume the worst of both players to be able to execu
 	
 	\item \textbf{Denial of Service} - Given we are using the \textit{Commit-Reveal} approach, a malicious player could still attempt to ruin the game. Suppose that both players have committed to a a move, and then Player 1 reveals his move. This has made his move public to Player 2, and may reveal to Player 2 that he will lose the game (e.g. Player 1 has picked \textit{"rock"} and Player 2 is \textit{"scissors"}). Player 2 may then choose to deny the end of the game from happening by choosing to never reveal his move. In order to decentivise this deviant behaviour, the game sets a maximum waiting threshold of 5 minutes after the first move reveal by any player for the other player to also reveal their move. If the second revealer still hasn't revealed his move after this time threshold has elapsed when the \texttt{checkGameEnd} function is called, then this player is declared to be a cheater.
 	
-	\item \textbf{Tamper with existing games} - Given that the contract is in the public domain, any caller may attempt to call the public functions provided by the contract. Since the contract only supports one game at a time, it will only allow the registered players to call game state changing functions. The entry point to the contract finite state machine (the \texttt{registerToPlay} function), will have no effect when called if there are no more spaces in the game. 
+	\item \textbf{Tamper with existing games} - Given that the contract is in the public domain, any caller may attempt to call the public functions provided by the contract. Since the contract only supports one game at a time, it will only allow the registered players to call game state changing functions. The entry point to the contract finite state machine (the \texttt{registerToPlay} function), will have no effect when called if there are no more spaces in the game, meaning unregistered players will have no effect on an ongoing game.
 \end{itemize}
 
+\subsection{Strategy Rewards}
 
+Given that a player may still choose to attempt to cheat, it is important to calculate what their average expected winnings are - if a cheating strategy has the same or higher expected winnings as an honest strategy, there is no rational incentive for playing honestly. \\
 
-If for example Player 1 has revealed his move, and 5 minutes after this event Player 2 still hasn't revealed their move, then it is assumed that Player 2 is cheating because they may have read the move of the other player and are attempting to 
+Assuming the current game is able to detect all forms of cheating, the expected return \textit{E\textsubscript{1}} for a cheating strategy will be negative. This covers different cases:
 
-Honesty analysis
+\begin{enumerate}
+	\item \textbf{Cheater vs Honest} - The game detects cheating in this case, and transfers the contract balance to the Honest player
+	\item \textbf{Cheater vs Cheater} - The game detects both players are cheating, and splits the contract balance accordingly. However, due to transaction costs the players incurr in playing the game, in the case of this "draw", the players cannot make an expected return that is greater than 0.
+\end{enumerate} 
+
+On the other hand, we analyse the expected return for an honest player:
+
+\begin{enumerate}
+	\item \textbf{Honest vs Cheater} - As before, the game detects the other player is cheating, and transfers the contract balance to the Honest player. The Honest player thus makes a profit on the game, winning the entry fee that the Cheater required to register for the game.
+	\item \textbf{Honest vs Honest} - In this case, the expected return is the same as that of a normal Rock Paper Scissors game, whereby assuming both players make a choice at random, they have an equal chance of doubling their entry fee, drawing or losing their initial bet.
+\end{enumerate}
+
+From this low-level analysis, we can see that the worst-case scenario for both strategies is the same (the player loses their entry bet), whereas the best-case scenario for an honest player is doubling their initial investment, when the best a cheater can do is to "draw" against another cheater, resulting in an outcome that adds up to slightly less than the initial investment. Thus it becomes clear that the honest strategy is the more financially rewarding of the two.
 
 \section{Extensions and Further Concerns}
 	- Web interface (make sure keccakimplementation is the same)
@@ -78,12 +92,6 @@ Honesty analysis
 	- Paying contract maker
 	- Multiple games at once
 	
-%\input{title/title.tex}
-
-%\begin{abstract}
-%Your abstract goes here
-%\end{abstract}
-
 
 %\tableofcontents
 
