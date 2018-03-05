@@ -19,7 +19,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \setcounter{secnumdepth}{3}
-
+\usepackage[margin=1cm]{caption}
 
 
 \title{}
@@ -38,7 +38,7 @@
 
 \section{Introduction}
 
-I have opted to write a smart contract implementing a game of rock paper scissors. Due to their existence in the blockchain, as well as no enforced guarantees as to when a player must take their turn, this otherwise simple game becomes more complex due to security concerns.
+I have opted to write a smart contract implementing a game of rock paper scissors. Due to their existence in the blockchain, as well as no enforced guarantees as to when a player must take their turn, this otherwise simple game becomes more complex due to security concerns. I have imported a string utility library from \url{https://github.com/Arachnid/solidity-stringutils} for easier string manipulation. 
 
 \section{Game Architecture}
 
@@ -54,6 +54,49 @@ The game has 4 distinct stages, each of which are separated by user driven actio
 	\item \textbf{Checking for end of game} - This function checks for the sufficient conditions to finish the game in question. This can happen in 1 of 2 ways - either both players have revealed their moves within a reasonable threshold of one another, or one player has waited a sufficiently long time after revealing (in this contract, the waiting threshold is set to 5 minutes). If one of these conditions has been met, then the game is considered to be over, and the winner is decided. If any player has been considered to be cheating at any point in the game, they will not receive any of the winnings (unless both players have cheated, in which case the game is considered a draw, and the winnings are split equally between the two). 
 \end{enumerate}
 
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{screens/solidityAPI.png}
+		\captionsetup{width=.95\linewidth}
+	
+		\caption[width=0.8\linewidth]{The interaction API to the contract as seen in \textit{Remix}}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{screens/ether3}
+		      \captionsetup{width=.95\linewidth}
+		
+		\caption[width=0.8\linewidth]{Interacting with the contract using \textit{myEtherWallet}}
+		\label{fig:sub2}
+	\end{subfigure}
+	\label{fig:test}
+\end{figure}
+
+
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{screens/postRegistration.png}	
+	\caption{An ongoing game after player registration. Note the first address also created the contract, hence the discrepancy between the balance of the 2 accounts.}
+\end{figure}
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{screens/initialTransactions.png}	
+	\caption{Transactions being triggered in Remix - here we see the creation of a game and 2 players registering to play.}
+\end{figure}
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{screens/gameEnd.png}	
+	\caption{A final game transaction in Remix - the game finishes successfully in this case.}
+\end{figure}
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{screens/matchEnd.png}	
+	\caption{At the end of a game with an equal bet of 3 \textit{ETH}, the second player wins the bet (discrepancies in values go towards contract creation and transaction fees).}
+\end{figure}
 \section{Threat Modelling}
 
 As it stands, the game must assume the worst of both players to be able to execute in a fair way that rewards players appropriately. There are a number of different ways in which a player could attempt to cheat the system.
