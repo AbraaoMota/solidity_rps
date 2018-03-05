@@ -1,69 +1,71 @@
 pragma solidity ^0.4.0;
 contract RockPaperScissors {
-
+    
     using strings for *;
-
-
+    
     mapping (string => mapping(string => uint)) winnerMatrix;
     bool gameOver;
     address p1;
     address p2;
     address contractCreator;
-
+    
     string p1Move;
     string p2Move;
-
+    
     bool p1Cheated;
     bool p2Cheated;
-
+    
     bytes32 p1Commitment;
     bytes32 p2Commitment;
-
+    
     bool p1Revealed;
     bool p2Revealed;
-
+    
     uint firstReveal;
     uint gameLengthThreshold;
-
-
+    
+    // Debugging events
+    event PrintBytes(bytes32 bloop);
+    event PrintString(string blop);
+    
     // Constructor
     function RockPaperScissors() public payable {
         gameOver = false;
         gameLengthThreshold = 300;
         contractCreator = msg.sender;
     }
-
+    
     // Modifier helpers
     modifier bothPlayersHaveRegistered() {
-        require (p1 != 0 && p2 != 0);
+         require (p1 != 0 && p2 != 0);
         _;
     }
-
+    
     modifier bothPlayersHaveCommitted() {
         require (p1Commitment != 0 && p2Commitment != 0);
         _;
     }
-
+    
     modifier hasPayedGameFee(uint gameFee) {
         require (msg.value >= gameFee);
         _;
     }
-
+    
     modifier isNewPlayer() {
         p1 == 0 || p2 == 0;
         _;
     }
-
+    
     modifier isValidPlayer() {
         require (msg.sender == p1 || msg.sender == p2);
         _;
     }
-
+    
     modifier ongoingGame() {
         require(!gameOver);
         _;
     }
-
+    
     // Both players must register their interest to bind them into the game
     // This is the first function to be called
     function registerToPlay() public payable
@@ -76,9 +78,9 @@ contract RockPaperScissors {
             p2 = msg.sender;
         }
     }
-
-
-    // Players must commit a signature which has encrypted their move with a
+    
+    
+    // Players must commit a signature which has encrypted their move with a 
     // private salt of their choosing. They only reveal the salt and the move
     // at the next stage after both players have committed to a move
     // This is the 2nd stage of the game for a player
@@ -89,11 +91,11 @@ contract RockPaperScissors {
         ongoingGame
         bothPlayersHaveRegistered
     {
-        if (msg.sender == p1 && keccak256(p1Commitment) == keccak256("")) {
+        if (msg.sender == p1 && p1Commitment == 0) {
             // At this point, we only store a hashed commitment to a move,
             // not the move itself.
             p1Commitment = signedMove;
-        } else if (msg.sender == p2 && keccak256(p2Commitment) == keccak256("")) {
+        } else if (msg.sender == p2 && p2Commitment == 0) {
             p2Commitment = signedMove;
         }
     }
@@ -144,7 +146,7 @@ contract RockPaperScissors {
             }
         }
     }
-
+    
     // This function is the final stage of the game, and should be called after
     // either the time threshold has elapsed after the first reveal, or if
     // both players have revealed within the time period.
@@ -156,17 +158,17 @@ contract RockPaperScissors {
     {
         if (keccak256(p1Move) != keccak256("") && keccak256(p2Move) != keccak256("")) {
             // If both players have revealed within the time period, we have already
-            // set whether they have cheated or not
+            // set whether they have cheated or not 
             gameOver = true;
 
             payWinnings();
             resetGame();
         } else if (now > firstReveal + gameLengthThreshold) {
-            // If one of the players has revealed but the other has taken too long
+            // If one of the players has revealed but the other has taken too long 
             // to play, we set that the slower player is cheating
             // We know whether the faster player has cheated already or not
             gameOver = true;
-
+            
             // One of the players has taken too long to reveal, they have cheated
             if (keccak256(p1Move) != keccak256("")) {
                 // P1 has a move set, so P2 taking too long
@@ -175,12 +177,12 @@ contract RockPaperScissors {
                 // P2 has a move set, so P1 taking too long
                 p1Cheated = true;
             }
-
+            
             payWinnings();
             resetGame();
         }
     }
-
+    
     function payWinnings() private {
         // Check for cheating first
         if (p1Cheated && p2Cheated) {
@@ -197,9 +199,9 @@ contract RockPaperScissors {
             p1.transfer(this.balance);
             return;
         }
-
+        
         uint winner = decideWinner();
-
+        
         // If no cheating involved, pay rightful winner
         if (winner == 0) {
             p1.transfer(this.balance / 2);
@@ -213,7 +215,7 @@ contract RockPaperScissors {
             return;
         }
     }
-
+    
     // Decides on a winner based on moves. We have a precondition that the move
     // is already valid
     // 0 = Draw
@@ -223,7 +225,7 @@ contract RockPaperScissors {
         if (keccak256(p1Move) == keccak256(p2Move)) {
             return 0;
         }
-
+        
         if (keccak256(p1Move) == keccak256("rock")) {
             if (keccak256(p2Move) == keccak256("paper")) {
                 return 2;
@@ -244,7 +246,7 @@ contract RockPaperScissors {
             }
         }
     }
-
+    
     // Reset variables
     function resetGame() private {
         delete p1;
@@ -258,7 +260,7 @@ contract RockPaperScissors {
         delete p2Cheated;
         delete firstReveal;
     }
-
+    
     // Checks that a given move is a valid RPS move
     function isValidMove(string move) pure internal returns (bool valid){
         return (keccak256(move) == keccak256("rock")  ||
@@ -266,37 +268,37 @@ contract RockPaperScissors {
                 keccak256(move) == keccak256("scissors"));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 // Library taken from https://github.com/Arachnid/solidity-stringutils
 /*
  * @title String & slice utility library for Solidity contracts.
